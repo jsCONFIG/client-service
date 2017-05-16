@@ -1,0 +1,17 @@
+{
+  "name": "client-service",
+  "version": "0.0.1",
+  "description": "Provide general headless browser service based on phantomjs",
+  "main": "services/headless-browser-service.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jsCONFIG/client-service.git"
+  },
+  "scripts": {},
+  "author": [
+    "clpliuping@126.com"
+  ],
+  "dependencies": {
+    "queue": "^4.2.1"
+  }
+}
