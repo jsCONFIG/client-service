@@ -8,6 +8,15 @@
     "url": "git@github.com:jsCONFIG/client-service.git"
   },
   "scripts": {},
+  "readmeFilename": "README.md",
+  "bugs": {
+        "url": "https://github.com/jsCONFIG/client-service/issues"
+    },
+    "keywords": [
+        "phantomjs",
+        "client-service",
+        "headless browser environment"
+    ],
   "author": [
     "clpliuping@126.com"
   ],

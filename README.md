@@ -1,5 +1,7 @@
 # Client-service
-Provide general headless browser service based on phantomjs
+Provide general headless browser service based on phantomjs.
+
+>Make sure you have installed the phantomjs.
 
 ## Install
 ```
