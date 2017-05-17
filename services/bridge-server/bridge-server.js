@@ -8,7 +8,6 @@ const finishRes = (res, req, data) => {
     data = JSON.stringify(data || {status: 'error', code: 404});
     res.setHeader('Content-Type', 'application/json;charset=UTF-8');
     res.setHeader('Access-Control-Allow-Headers', 'X-Secret, Content-Type');
-    res.setHeader('Access-Control-Allow-Methods', (req && req.headers.origin) || '*');
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.end(data);
 };

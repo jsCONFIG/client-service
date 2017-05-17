@@ -40,7 +40,7 @@ __entry.js__(Node)
 ```
 var HeadlessBrowserEnv = require('client-service');
 
-var inst = new HeadlessBrowserEnv('http://127.0.0.1:3333');
+var inst = new HeadlessBrowserEnv();
 var taskPath = 'xxxxx/client.js';
 inst.run(taskPath, {}, {
     onMessage: function (bridgeMethod, bridgeData, resDataForBridge) {
@@ -53,7 +53,7 @@ inst.run(taskPath, {}, {
 ## API
 
 ### var hdlInst  = new HeadlessBrowserEnv([bridgeApi], [opts])
-* bridgeApi: Used to communicate with bridge. Default `http://127.0.0.1:3333`;
+* bridgeApi: Used to communicate with bridge. Default `http://127.0.0.1:2333`;
 * opts:
 	* opts.buildBridgeServer: Automatically create a bridge service. Default `true`;
 	* opts.secret: secret for bridge api(compare with req.headers['x-secret']).
