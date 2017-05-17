@@ -53,7 +53,7 @@ inst.run(taskPath, {}, {
 ## API
 
 ### var hdlInst  = new HeadlessBrowserEnv([bridgeApi], [opts])
-* bridgeApi: Used to communicate with bridge. Default `http://127.0.0.1:2333`;
+* bridgeApi: Used to communicate with bridge. Default `http://127.0.0.1:3333`;
 * opts:
 	* opts.buildBridgeServer: Automatically create a bridge service. Default `true`;
 	* opts.secret: secret for bridge api(compare with req.headers['x-secret']).
