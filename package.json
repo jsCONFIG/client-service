@@ -1,6 +1,6 @@
 {
   "name": "client-service",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Provide general headless browser service based on phantomjs",
   "main": "services/headless-browser-service.js",
   "repository": {
