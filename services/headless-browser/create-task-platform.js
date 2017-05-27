@@ -63,12 +63,14 @@ var createTaskPlatform = function (bridgeInst, jobOpts) {
     });
 
     var registerBridgeHandlers = {};
+    var ptInsts = {};
     return {
         queue,
         run: (jobFile, jobParams, opts) => {
             opts = Object.assign({
                 // 接收到消息时的回调
-                onMessage: function (reqParams, resData) {}
+                onMessage: function (reqParams, resData) {},
+                debug: false
             }, opts);
             var onMessage = opts.onMessage;
             var bridgeId = bridgeInst.registerBridgeId();
@@ -79,16 +81,35 @@ var createTaskPlatform = function (bridgeInst, jobOpts) {
                     delete registerBridgeHandlers[bridgeId];
                     bridgeInst.removeHandler(bridgeId, onMessage);
                 }
+                var ptInst = ptInsts[jobId];
+                if (ptInst) {
+                    delete ptInst[jobId];
+                    ptInst.destroy();
+                    ptInst = null;
+                }
             };
             var queueCore = (next) => {
-                log('Start Job.', 'debug', 'SERVICE_BOOT');
-                var onEnd = (result, job) => {
+                log('Start Job. jobID(' + jobId + ')', 'debug', 'SERVICE_BOOT');
+                var onEnd = function (result, job) {
                     destroy();
-                    next(null, { jobId, result, inst: phantomjsInst });
+                    next(
+                        null,
+                        {
+                            jobId: jobId,
+                            result: result,
+                            inst: phantomjsInst
+                        }
+                    );
                 };
-                var onError = (err, job) => {
+                var onError = function (err, job) {
                     destroy();
-                    next(err, { jobId, inst: phantomjsInst });
+                    next(
+                        err,
+                        {
+                            jobId: jobId,
+                            inst: phantomjsInst
+                        }
+                    );
                 };
                 // 增加Bridge消息监听
                 bridgeInst.setHandler(bridgeId, onMessage);
@@ -98,14 +119,16 @@ var createTaskPlatform = function (bridgeInst, jobOpts) {
                     jobFile,
                     jobParams,
                     {
-                        onEnd,
-                        onError,
-                        jobId,
+                        onEnd: onEnd,
+                        onError: onError,
+                        jobId: jobId,
                         bridgeId: bridgeId,
                         bridgeApi: bridgeInst.api,
-                        secret: bridgeInst.secret
+                        secret: bridgeInst.secret,
+                        debug: opts.debug
                     }
                 );
+                ptInsts[jobId] = phantomjsInst;
                 return phantomjsInst;
             };
             queueCore.jobId = jobId;
@@ -125,6 +148,17 @@ var createTaskPlatform = function (bridgeInst, jobOpts) {
                     if (bridgeHandler) {
                         delete registerBridgeHandlers[i];
                         bridgeInst.removeHandler(i, bridgeHandler);
+                        bridgeHandler = null;
+                    }
+                }
+            }
+            for (var i in ptInsts) {
+                if (ptInsts.hasOwnProperty(i)) {
+                    var ptInst = ptInsts[i];
+                    if (ptInst) {
+                        delete ptInsts[i];
+                        ptInst.destroy();
+                        ptInst = null;
                     }
                 }
             }

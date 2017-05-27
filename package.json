@@ -1,13 +1,15 @@
 {
   "name": "client-service",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Provide general headless browser service based on phantomjs",
   "main": "services/headless-browser-service.js",
   "repository": {
     "type": "git",
     "url": "git@github.com:jsCONFIG/client-service.git"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "node ./demo/entry.js"
+  },
   "readmeFilename": "README.md",
   "bugs": {
         "url": "https://github.com/jsCONFIG/client-service/issues"
@@ -22,5 +24,8 @@
   ],
   "dependencies": {
     "queue": "^4.2.1"
+  },
+  "devDependencies": {
+    "client-service-bridge": "0.0.1"
   }
 }

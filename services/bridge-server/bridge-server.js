@@ -3,6 +3,7 @@
  */
 const http = require('http');
 const url = require('url');
+const log = require('../../lib/log');
 
 const finishRes = (res, req, data) => {
     data = JSON.stringify(data || {status: 'error', code: 404});
@@ -58,10 +59,11 @@ const createServer = function (bridgeInst) {
     });
 
     server.listen(ptConfig.port, ptConfig.domain);
-    console.log(`Node listener on ${ptConfig.domain}:${ptConfig.port}`);
+    log('Bridge-server listener on ' + ptConfig.domain + ':' + ptConfig.port, 'debug', 'BRIDGE_BOOT');
     return {
         destroy: function () {
             server.close();
+            log('Close bridge server', 'debug', 'BRIDGE_BOOT');
         }
     };
 };

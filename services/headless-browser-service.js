@@ -16,10 +16,11 @@ var HeadlessBrowserService = function (bridgeApi, opts) {
     this.secret = opts.secret;
     this.bridgeNs = new BridgeNs(bridgeApi, opts);
     if (opts.buildBridgeServer) {
-        var bridgeServer = this.bridgeServer = createBridgeServer(this.bridgeNs);
+        this.bridgeServer = createBridgeServer(this.bridgeNs);
+        var self = this;
         // 监听ctrl+c操作，退出server服务
         process.on('SIGINT', function () {
-            bridgeServer.destroy();
+            self.destroy();
         });
     }
     this.taskPlatform = headlessBrowser.createTaskPlatform(this.bridgeNs);
@@ -37,6 +38,7 @@ HeadlessBrowserService.prototype = {
     },
     destroy: function () {
         this.bridgeServer && this.bridgeServer.destroy();
+        this.taskPlatform && this.taskPlatform.destroy();
     }
 };
 
