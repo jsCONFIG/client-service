@@ -32,7 +32,8 @@ var ptEntry = function (taskFile, params, opts) {
     });
 
     var exitChild = () => {
-        childProcess.kill('SIGHUP');
+        log('Pt destroy fired', 'debug', 'PT_BOOT');
+        childProcess.kill('SIGKILL');
     };
     return {
         phantom: childProcess,

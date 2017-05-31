@@ -57,6 +57,8 @@ inst.run(taskPath, {}, {
 * opts:
 	* opts.buildBridgeServer: Automatically create a bridge service. Default `true`;
 	* opts.secret: secret for bridge api(compare with req.headers['x-secret']).
+            * opts.timeout: overtime time for `hdInst.run(xxx)`, default `10000` ms.
+            * opts.concurrency: concurrent number for `hdInst.run(xxx)`, default `cpus length * 2`.
 
 
 ### hdlInst.run(jobFilePath, jobParams, [opts]);
@@ -66,6 +68,7 @@ inst.run(taskPath, {}, {
 	* bridgeMethod: `GET`/`POST`;
 	* bridgeData: `clientTools.send(xxxx);`
 	* resDataForBridge: `clientTools.send(..., function (xx, res) {});`
+* opts.onTimeout: called when task is timeout.
 
 ### hdlInst.verifyRequest(req);
 Verify bridge request(If you set `opts.buildBridgeServer = false`, and create bridge server by yourself, you can use this method to verify request.).
@@ -73,3 +76,7 @@ Verify bridge request(If you set `opts.buildBridgeServer = false`, and create br
 ### hdlInst.resolveResponseData(req, reqParams);
 Resolve response data for bridge(If you set `opts.buildBridgeServer = false`, and create bridge server by yourself, you can use this method to resolve data for response.).
 
+## CHANGE LOG
+
+* Add `onTimeout`;
+* Add `concurrency` for task's queue;

@@ -15,7 +15,7 @@ const utils = require('../../lib/utils');
  */
 var createTaskPlatform = function (bridgeInst, jobOpts) {
     // 执行环境的配置
-    jobOpts = Object.assign({
+    jobOpts = utils.smartyMerge({
         // 单个任务执行完成
         onSuccess: utils.emptyFn,
         // 任务执行出错
@@ -29,6 +29,8 @@ var createTaskPlatform = function (bridgeInst, jobOpts) {
         // 任务并发数，如不想并发，可设置为1
         concurrency: os.cpus().length * 2
     }, jobOpts);
+    var registerBridgeHandlers = {};
+    var ptInsts = {};
     var queueIdCount = 0;
     var queue = queueGenerator({
         concurrency: jobOpts.concurrency,
@@ -59,37 +61,49 @@ var createTaskPlatform = function (bridgeInst, jobOpts) {
     queue.on('timeout', (next, job) => {
         var jobId = job.jobId;
         log('Job ' + jobId + ' Timeout.', 'debug', 'SERVICE_BOOT');
+        var handlerGroup = registerBridgeHandlers[jobId];
+        if (handlerGroup && handlerGroup.onTimeout) {
+            handlerGroup.onTimeout();
+        }
+        jobOpts.onTimeout(jobId);
         next();
     });
 
-    var registerBridgeHandlers = {};
-    var ptInsts = {};
     return {
         queue,
         run: (jobFile, jobParams, opts) => {
             opts = Object.assign({
                 // 接收到消息时的回调
-                onMessage: function (reqParams, resData) {},
+                onMessage: utils.emptyFn,
+                onTimeout: utils.emptyFn,
                 debug: false
             }, opts);
             var onMessage = opts.onMessage;
             var bridgeId = bridgeInst.registerBridgeId();
             var jobId = ++queueIdCount;
             var destroy = function () {
-                var bridgeHandler = registerBridgeHandlers[bridgeId];
-                if (bridgeHandler) {
+                // 清空回调方法
+                var bridgeHandlerGroup = registerBridgeHandlers[bridgeId];
+                if (bridgeHandlerGroup) {
                     delete registerBridgeHandlers[bridgeId];
-                    bridgeInst.removeHandler(bridgeId, onMessage);
                 }
+                bridgeInst.removeHandler(bridgeId, onMessage);
+                // 销毁子进程
                 var ptInst = ptInsts[jobId];
                 if (ptInst) {
-                    delete ptInst[jobId];
+                    delete ptInsts[jobId];
                     ptInst.destroy();
                     ptInst = null;
+                }
+                // 移除队列
+                var qPos = queue.indexOf(queueCore);
+                if (qPos !== -1) {
+                    queue.splice(qPos, 1);
                 }
             };
             var queueCore = (next) => {
                 log('Start Job. jobID(' + jobId + ')', 'debug', 'SERVICE_BOOT');
+                var phantomjsInst;
                 var onEnd = function (result, job) {
                     destroy();
                     next(
@@ -115,7 +129,7 @@ var createTaskPlatform = function (bridgeInst, jobOpts) {
                 bridgeInst.setHandler(bridgeId, onMessage);
 
                 // 启动pt 服务
-                var phantomjsInst = phantomjsBootstrap.entry(
+                phantomjsInst = phantomjsBootstrap.entry(
                     jobFile,
                     jobParams,
                     {
@@ -133,7 +147,13 @@ var createTaskPlatform = function (bridgeInst, jobOpts) {
             };
             queueCore.jobId = jobId;
             queue.push(queueCore);
-            registerBridgeHandlers[bridgeId] = onMessage;
+            registerBridgeHandlers[bridgeId] = {
+                onMessage: onMessage,
+                onTimeout: function () {
+                    destroy();
+                    opts.onTimeout();
+                }
+            };
             // 返回任务ID
             return {
                 jobId: jobId,
@@ -144,11 +164,11 @@ var createTaskPlatform = function (bridgeInst, jobOpts) {
         destroy: function () {
             for (var i in registerBridgeHandlers) {
                 if (registerBridgeHandlers.hasOwnProperty(i)) {
-                    var bridgeHandler = registerBridgeHandlers[i];
-                    if (bridgeHandler) {
+                    var bridgeHandlerGroup = registerBridgeHandlers[i];
+                    if (bridgeHandlerGroup) {
                         delete registerBridgeHandlers[i];
-                        bridgeInst.removeHandler(i, bridgeHandler);
-                        bridgeHandler = null;
+                        bridgeHandlerGroup.onMessage && bridgeInst.removeHandler(i, bridgeHandlerGroup.onMessage);
+                        bridgeHandlerGroup = null;
                     }
                 }
             }
